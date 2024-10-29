@@ -38,6 +38,11 @@ class MainActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewListe
         setContentView(R.layout.activity_main)
 
         textViewStatus = findViewById(R.id.textViewStatus)
+        buttonStartPreview = findViewById(R.id.buttonStartPreview)
+        buttonStopPreview = findViewById(R.id.buttonStopPreview)
+        checkBoxProcessing = findViewById(R.id.checkboxEnableProcessing)
+        imageView = findViewById(R.id.imageView)
+        openCvCameraView = findViewById(R.id.cameraView)
 
         isOpenCvInitialized = OpenCVLoader.initLocal()
 
@@ -52,14 +57,52 @@ class MainActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewListe
             )
         }
 
+        openCvCameraView.setCameraIndex(0)
+        openCvCameraView.setCvCameraViewListener(this)
+
+        buttonStartPreview.setOnClickListener {
+            openCvCameraView.setCameraPermissionGranted()
+            openCvCameraView.enableView()
+
+            updateControls()
+        }
+
+        buttonStopPreview.setOnClickListener {
+            openCvCameraView.disableView()
+
+            updateControls()
+        }
+
         updateControls()
     }
 
     private fun updateControls() {
         if(!isOpenCvInitialized) {
-            textViewStatus.text = "Image Preprocess Error"
+            textViewStatus.text = "OpenCV initialization error"
+
+            buttonStartPreview.isEnabled = false;
+            buttonStopPreview.isEnabled = false;
         } else {
-            textViewStatus.text = "Image Preprocess"
+            textViewStatus.text = "OpenCV initialized"
+
+            buttonStartPreview.isEnabled = !isPreviewActive;
+            buttonStopPreview.isEnabled = isPreviewActive;
         }
+    }
+
+    override fun onCameraViewStarted(width: Int, height: Int) {
+        isPreviewActive = true
+
+        updateControls()
+    }
+
+    override fun onCameraViewStopped() {
+        isPreviewActive = false
+
+        updateControls()
+    }
+
+    override fun onCameraFrame(inputFrame: CameraBridgeViewBase.CvCameraViewFrame?): Mat {
+        return inputFrame!!.rgba()
     }
 }
