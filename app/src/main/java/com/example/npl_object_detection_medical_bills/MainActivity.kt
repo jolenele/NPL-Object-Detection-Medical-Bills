@@ -18,6 +18,9 @@ import android.widget.ImageView
 import org.opencv.core.CvType
 import org.opencv.core.Mat
 
+import android.graphics.Bitmap
+import org.opencv.android.Utils
+
 class MainActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewListener2 {
     private lateinit var textViewStatus: TextView
     private var isOpenCvInitialized = false
@@ -31,6 +34,8 @@ class MainActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewListe
     private lateinit var openCvCameraView: CameraBridgeViewBase
 
     private var isPreviewActive = false
+
+    private lateinit var inputMat: Mat
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,16 +98,30 @@ class MainActivity : AppCompatActivity(), CameraBridgeViewBase.CvCameraViewListe
     override fun onCameraViewStarted(width: Int, height: Int) {
         isPreviewActive = true
 
+        inputMat = Mat(height, width, CvType.CV_8UC4)
+
         updateControls()
     }
 
     override fun onCameraViewStopped() {
         isPreviewActive = false
 
+        inputMat.release()
+
         updateControls()
     }
 
     override fun onCameraFrame(inputFrame: CameraBridgeViewBase.CvCameraViewFrame?): Mat {
-        return inputFrame!!.rgba()
+        inputFrame!!.rgba().copyTo(inputMat)
+
+        val bitmapToDisplay = Bitmap.createBitmap(inputMat.cols(), inputMat.rows(), Bitmap.Config.ARGB_8888)
+        Utils.matToBitmap(inputMat, bitmapToDisplay)
+
+        // Display it on UI Thread
+        runOnUiThread {
+            imageView.setImageBitmap(bitmapToDisplay)
+        }
+
+        return inputMat
     }
 }
