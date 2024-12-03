@@ -21,6 +21,15 @@
             android:text="Start"
             android:layout_marginEnd="8dp" />
 
+        <!-- Text to Speech Button -->
+        <Button
+            android:id="@+id/buttonTextToSpeech"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Speak"
+            android:layout_marginEnd="8dp" />
+
         <!-- Stop Preview Button -->
         <Button
             android:id="@+id/buttonStopPreview"
